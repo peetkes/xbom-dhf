@@ -1,0 +1,36 @@
+{
+  "template": {
+    "description": "Extraction Template for eBomLink",
+    "context": "/",
+    "collections": [
+      "eBomLink",
+      "caLink",
+      "upperLink"
+    ],
+    "triples": [
+      {
+        "subject": {
+          "val": "if(./parent/string()!='') then sem:iri(./parent/string()) else ()",
+          "invalidValues": "ignore"
+        },
+        "predicate": {
+          "val": "sem:iri('http://airbus.com/xbom#isParentOf')"
+        },
+        "object": {
+          "val": "sem:iri(./child/string())"
+        }
+      },{
+        "subject": {
+          "val": "if(./parent/string()!='') then sem:iri(./parent/string()) else ()",
+          "invalidValues": "ignore"
+        },
+        "predicate": {
+          "val": "sem:iri('http://airbus.com/xbom#partOfProgram')"
+        },
+        "object": {
+          "val": "sem:iri(./program/string())"
+        }
+      }
+    ]
+  }
+}

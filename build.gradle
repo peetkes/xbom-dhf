@@ -1,0 +1,66 @@
+buildscript {
+      repositories {
+            mavenLocal()
+            mavenCentral()
+            gradlePluginPortal()
+      }
+      dependencies {
+            //Needed for CorbTask to dynamically generate properties from CORB Options class
+            classpath "com.marklogic:marklogic-corb:${corbVersion}"
+            classpath "com.marklogic:ml-data-hub:${mlDHFVersion}"
+            classpath "net.saliman:gradle-properties-plugin:1.5.1"
+      }
+}
+
+apply plugin: "net.saliman.properties"
+apply plugin: "com.marklogic.ml-data-hub"
+apply plugin: "java"
+
+repositories {
+      mavenCentral()
+      mavenLocal()
+      gradlePluginPortal()
+}
+
+configurations {
+      corb
+      mlcp
+}
+
+dependencies {
+      corb "com.marklogic:marklogic-corb:${corbVersion}"
+      // optional
+      corb 'org.jasypt:jasypt:1.9.2' // would be necessary to leverage JasyptDecrypter
+      // this allows you to write custom java code that depends
+      // on the Data Hub library
+      compile "com.marklogic:marklogic-data-hub:${mlDHFVersion}"
+      compile "com.marklogic:marklogic-xcc:${xccVersion}"
+      mlcp "com.marklogic:mlcp:${mlcpVersion}"
+      mlcp files("lib")
+}
+
+configurations.all {
+      // avoid SLF4J: classpath contains multiple SLF4J bindings
+      exclude group: 'ch.qos.logback'
+      exclude group: 'org.slf4j'
+}
+
+tasks.withType(com.marklogic.gradle.task.MlcpTask) {
+      classpath = configurations.mlcp
+      command = 'IMPORT'
+      host = mlHost
+      port = Integer.parseInt(mlFinalPort)
+      username = mlUsername
+      password = mlPassword
+      output_permissions = 'rest-reader,read,rest-writer,update'
+      systemProperty 'hadoop.home.dir', "$project.rootDir/lib"
+}
+
+task importData(type: com.marklogic.gradle.task.MlcpTask) {
+      output_collections = "eBomLink"
+      output_uri_replace = ".*data/sample,''"
+      transform_function = "split"
+      transform_module = "/mlcp/split.sjs"
+      input_file_path = "data/sample/samples.json"
+      args = []
+}
